@@ -1,6 +1,4 @@
-import type { Direction, KnowledgeCard, Scene } from '../types/spatial'
-
-export const directions: Direction[] = ['north', 'east', 'south']
+import type { KnowledgeCard, WorldManifest } from '../types/spatial'
 
 export const knowledge: Record<string, KnowledgeCard> = {
   'newton-second-law': {
@@ -15,46 +13,112 @@ export const knowledge: Record<string, KnowledgeCard> = {
     body: 'The normal force is a contact force exerted perpendicular to a surface. It is not always equal to weight.',
     teacherCue: 'SHOW: Compare a horizontal desk with an inclined plane.'
   },
-  'retrieval-question': {
-    id: 'retrieval-question',
-    title: 'Retrieval Check',
-    body: 'Without looking at notes: where in this room did we place Newton’s Second Law?',
-    teacherCue: 'WAIT: Give students several seconds to reconstruct the location.'
+  'kitchen-energy': {
+    id: 'kitchen-energy',
+    title: 'Energy Transfer',
+    body: 'A kitchen gives many concrete examples of energy transfer: heating, cooling, phase change, and mechanical work.',
+    teacherCue: 'ASK: Where can students find three different energy transfers in this room?'
   }
 }
 
-export const scenes: Record<Direction, Scene> = {
-  north: {
-    id: 'japanese-house-bedroom-north',
-    roomId: 'bedroom',
-    direction: 'north',
-    title: 'Bedroom · North',
-    visualClass: 'scene-north',
-    hotspots: [
-      { id: 'blue-book', label: 'Blue Book', x: 18, y: 29, width: 18, height: 34, kind: 'knowledge', knowledgeId: 'newton-second-law' },
-      { id: 'clock', label: 'Clock', x: 71, y: 16, width: 12, height: 18, kind: 'empty' }
-    ]
+export const world: WorldManifest = {
+  id: 'japanese-house-v1',
+  title: 'Japanese House',
+  version: 'v1',
+  startSceneId: 'entrance-a',
+  rooms: {
+    'entrance-hall-a': { id: 'entrance-hall-a', title: 'Entrance Hall A', lockedLocation: true },
+    'study-room': { id: 'study-room', title: 'Study Room', lockedLocation: true },
+    'kitchen': { id: 'kitchen', title: 'Kitchen', lockedLocation: true },
+    'future-hall-b': { id: 'future-hall-b', title: 'Future Hall B', lockedLocation: false }
   },
-  east: {
-    id: 'japanese-house-bedroom-east',
-    roomId: 'bedroom',
-    direction: 'east',
-    title: 'Bedroom · East',
-    visualClass: 'scene-east',
-    hotspots: [
-      { id: 'desk-book', label: 'Book on Desk', x: 56, y: 57, width: 22, height: 16, kind: 'knowledge', knowledgeId: 'normal-force' },
-      { id: 'snack-bag', label: 'Opened Snack Bag', x: 21, y: 69, width: 17, height: 16, kind: 'empty' }
-    ]
-  },
-  south: {
-    id: 'japanese-house-bedroom-south',
-    roomId: 'bedroom',
-    direction: 'south',
-    title: 'Bedroom · South',
-    visualClass: 'scene-south',
-    hotspots: [
-      { id: 'stuffed-toy', label: 'Stuffed Toy', x: 62, y: 43, width: 18, height: 26, kind: 'question', knowledgeId: 'retrieval-question' },
-      { id: 'slippers', label: 'Slippers', x: 30, y: 77, width: 20, height: 12, kind: 'empty' }
-    ]
+  scenes: {
+    'entrance-a': {
+      id: 'entrance-a',
+      roomId: 'entrance-hall-a',
+      view: 'entrance',
+      role: 'hub',
+      title: 'Entrance Hall · Theme Hub',
+      visualClass: 'scene-entrance',
+      hotspots: [
+        { id: 'door-study', label: 'Study Room', x: 4, y: 18, width: 18, height: 54, kind: 'navigation', targetSceneId: 'study-entry' },
+        { id: 'door-kitchen', label: 'Kitchen', x: 25, y: 17, width: 15, height: 52, kind: 'navigation', targetSceneId: 'kitchen-entry' },
+        { id: 'door-future-wing', label: 'Future Wing', x: 45, y: 25, width: 13, height: 45, kind: 'navigation', targetSceneId: 'future-hall-b' },
+        { id: 'door-reserved-right', label: 'Reserved Room', x: 64, y: 18, width: 14, height: 52, kind: 'empty' },
+        { id: 'door-reserved-front', label: 'Reserved Room', x: 81, y: 17, width: 14, height: 54, kind: 'empty' }
+      ]
+    },
+    'study-entry': {
+      id: 'study-entry',
+      roomId: 'study-room',
+      view: 'entry',
+      role: 'explore',
+      title: 'Study Room · Entry View',
+      visualClass: 'scene-study',
+      turnLeftSceneId: 'study-exit',
+      turnRightSceneId: 'study-exit',
+      hotspots: [
+        { id: 'study-blue-book', label: 'Blue Book', x: 8, y: 20, width: 27, height: 43, kind: 'knowledge', knowledgeId: 'newton-second-law' },
+        { id: 'study-desk-book', label: 'Open Book', x: 44, y: 48, width: 19, height: 14, kind: 'knowledge', knowledgeId: 'normal-force' },
+        { id: 'study-teddy', label: 'Teddy Bear', x: 76, y: 39, width: 12, height: 18, kind: 'empty' },
+        { id: 'study-snack', label: 'Opened Snack Bag', x: 68, y: 70, width: 12, height: 11, kind: 'empty' }
+      ]
+    },
+    'study-exit': {
+      id: 'study-exit',
+      roomId: 'study-room',
+      view: 'exit',
+      role: 'exit',
+      title: 'Study Room · Exit View',
+      visualClass: 'scene-study-exit',
+      turnLeftSceneId: 'study-entry',
+      turnRightSceneId: 'study-entry',
+      hotspots: [
+        { id: 'study-door-out', label: 'Return to Entrance', x: 34, y: 8, width: 20, height: 60, kind: 'navigation', targetSceneId: 'entrance-a' }
+      ]
+    },
+    'kitchen-entry': {
+      id: 'kitchen-entry',
+      roomId: 'kitchen',
+      view: 'entry',
+      role: 'explore',
+      title: 'Kitchen · Entry View',
+      visualClass: 'scene-kitchen',
+      turnLeftSceneId: 'kitchen-exit',
+      turnRightSceneId: 'kitchen-exit',
+      hotspots: [
+        { id: 'kitchen-stove', label: 'Stove', x: 65, y: 34, width: 19, height: 34, kind: 'knowledge', knowledgeId: 'kitchen-energy' },
+        { id: 'kitchen-table-book', label: 'Book on Table', x: 51, y: 55, width: 17, height: 13, kind: 'knowledge', knowledgeId: 'normal-force' },
+        { id: 'kitchen-fridge', label: 'Refrigerator', x: 84, y: 15, width: 13, height: 55, kind: 'empty' },
+        { id: 'kitchen-fruit', label: 'Fruit Bowl', x: 43, y: 47, width: 11, height: 12, kind: 'empty' }
+      ]
+    },
+    'kitchen-exit': {
+      id: 'kitchen-exit',
+      roomId: 'kitchen',
+      view: 'exit',
+      role: 'exit',
+      title: 'Kitchen · Exit View',
+      visualClass: 'scene-kitchen-exit',
+      turnLeftSceneId: 'kitchen-entry',
+      turnRightSceneId: 'kitchen-entry',
+      hotspots: [
+        { id: 'kitchen-door-out', label: 'Return to Entrance', x: 35, y: 7, width: 24, height: 64, kind: 'navigation', targetSceneId: 'entrance-a' }
+      ]
+    },
+    'future-hall-b': {
+      id: 'future-hall-b',
+      roomId: 'future-hall-b',
+      view: 'transit',
+      role: 'transit',
+      title: 'Future Hall B · Expansion Point',
+      visualClass: 'scene-future',
+      hotspots: [
+        { id: 'future-return', label: 'Return to Entrance Hall A', x: 5, y: 18, width: 17, height: 55, kind: 'navigation', targetSceneId: 'entrance-a' },
+        { id: 'future-door-01', label: 'Future Room 05', x: 32, y: 18, width: 15, height: 52, kind: 'empty' },
+        { id: 'future-door-02', label: 'Future Room 06', x: 53, y: 18, width: 15, height: 52, kind: 'empty' },
+        { id: 'future-door-03', label: 'Future Room 07', x: 74, y: 18, width: 15, height: 52, kind: 'empty' }
+      ]
+    }
   }
 }

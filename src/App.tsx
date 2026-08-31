@@ -1,33 +1,50 @@
 import { useMemo, useState } from 'react'
-import { directions, knowledge, scenes } from './data/demo'
-import type { Direction, Hotspot } from './types/spatial'
+import { knowledge, world } from './data/demo'
+import type { Hotspot } from './types/spatial'
 
 export default function App() {
-  const [direction, setDirection] = useState<Direction>('north')
+  const [currentSceneId, setCurrentSceneId] = useState(world.startSceneId)
   const [studentGuide, setStudentGuide] = useState(false)
   const [teacherGuide, setTeacherGuide] = useState(false)
   const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null)
 
-  const scene = scenes[direction]
+  const scene = world.scenes[currentSceneId]
+  const room = world.rooms[scene.roomId]
   const selectedKnowledge = selectedHotspot?.knowledgeId ? knowledge[selectedHotspot.knowledgeId] : null
-
-  const directionIndex = directions.indexOf(direction)
-  const turn = (delta: number) => {
-    const next = directions[(directionIndex + delta + directions.length) % directions.length]
-    setDirection(next)
-    setSelectedHotspot(null)
-  }
 
   const knowledgeHotspots = useMemo(
     () => scene.hotspots.filter((hotspot) => hotspot.knowledgeId),
     [scene],
   )
 
+  const navigationHotspots = useMemo(
+    () => scene.hotspots.filter((hotspot) => hotspot.kind === 'navigation' && hotspot.targetSceneId),
+    [scene],
+  )
+
+  const goToScene = (sceneId?: string) => {
+    if (!sceneId || !world.scenes[sceneId]) return
+    setCurrentSceneId(sceneId)
+    setSelectedHotspot(null)
+  }
+
+  const handleHotspot = (hotspot: Hotspot) => {
+    if (hotspot.kind === 'navigation' && hotspot.targetSceneId) {
+      goToScene(hotspot.targetSceneId)
+      return
+    }
+    setSelectedHotspot(hotspot)
+  }
+
+  const backgroundStyle = scene.asset
+    ? { backgroundImage: `url(${scene.asset})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : undefined
+
   return (
     <main className="app-shell">
       <header className="topbar">
         <div>
-          <p className="eyebrow">JAPANESE HOUSE · v1 · WORLD LOCK DEMO</p>
+          <p className="eyebrow">{world.title.toUpperCase()} · {world.version.toUpperCase()} · SCENE GRAPH</p>
           <h1>{scene.title}</h1>
         </div>
         <div className="guide-controls">
@@ -40,24 +57,26 @@ export default function App() {
         </div>
       </header>
 
-      <section className={`scene ${scene.visualClass}`} aria-label={scene.title}>
-        <div className="room-art" aria-hidden="true">
-          <div className="window" />
-          <div className="shelf"><span /><span /><span /><span /><span /></div>
-          <div className="desk"><div className="desk-book" /></div>
-          <div className="bed" />
-          <div className="rug" />
-          <div className="toy" />
-        </div>
+      <section className={`scene ${scene.visualClass}`} style={backgroundStyle} aria-label={scene.title}>
+        {!scene.asset && (
+          <div className="room-art" aria-hidden="true">
+            <div className="window" />
+            <div className="shelf"><span /><span /><span /><span /><span /></div>
+            <div className="desk"><div className="desk-book" /></div>
+            <div className="bed" />
+            <div className="rug" />
+            <div className="toy" />
+          </div>
+        )}
 
         {scene.hotspots.map((hotspot) => {
-          const visible = studentGuide && Boolean(hotspot.knowledgeId)
+          const visible = studentGuide && (Boolean(hotspot.knowledgeId) || hotspot.kind === 'navigation')
           return (
             <button
               key={hotspot.id}
-              className={`hotspot ${visible ? 'student-visible' : ''}`}
+              className={`hotspot ${visible ? 'student-visible' : ''} ${hotspot.kind === 'navigation' ? 'navigation-hotspot' : ''}`}
               style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%`, width: `${hotspot.width}%`, height: `${hotspot.height}%` }}
-              onClick={() => setSelectedHotspot(hotspot)}
+              onClick={() => handleHotspot(hotspot)}
               aria-label={hotspot.label}
             >
               {visible && <span>{hotspot.label}</span>}
@@ -69,22 +88,28 @@ export default function App() {
           <aside className="teacher-overlay">
             <strong>TEACHER GUIDE</strong>
             <span>Current: {scene.title}</span>
-            <span>Knowledge spots: {knowledgeHotspots.map((h) => h.label).join(' / ') || 'none'}</span>
-            <span>NEXT: tap a known object or turn the view.</span>
+            <span>Role: {scene.role}</span>
+            <span>Knowledge: {knowledgeHotspots.map((h) => h.label).join(' / ') || 'none'}</span>
+            <span>Routes: {navigationHotspots.map((h) => h.label).join(' / ') || 'none'}</span>
+            <span>{room.lockedLocation ? 'WORLD LOCK: this room location is fixed.' : 'EXPANSION AREA: new rooms may be attached here.'}</span>
           </aside>
         )}
 
-        <nav className="turn-controls" aria-label="View direction controls">
-          <button onClick={() => turn(-1)}>← 左を見る</button>
-          <div className="direction-indicator">{direction.toUpperCase()}</div>
-          <button onClick={() => turn(1)}>右を見る →</button>
-        </nav>
+        {(scene.turnLeftSceneId || scene.turnRightSceneId) && (
+          <nav className="turn-controls" aria-label="View direction controls">
+            <button disabled={!scene.turnLeftSceneId} onClick={() => goToScene(scene.turnLeftSceneId)}>← 左を見る</button>
+            <div className="direction-indicator">{scene.view.toUpperCase()}</div>
+            <button disabled={!scene.turnRightSceneId} onClick={() => goToScene(scene.turnRightSceneId)}>右を見る →</button>
+          </nav>
+        )}
       </section>
 
       <footer className="statusbar">
-        <span>WORLD: Japanese House v1</span>
-        <span>ROOM: Bedroom</span>
-        <span>VIEW: {direction.toUpperCase()}</span>
+        <span>WORLD: {world.title} {world.version}</span>
+        <span>ROOM: {room.title}</span>
+        <span>SCENE: {scene.id}</span>
+        <span>VIEW: {scene.view.toUpperCase()}</span>
+        <span>{room.lockedLocation ? '🔒 LOCATION LOCKED' : '＋ EXPANDABLE'}</span>
       </footer>
 
       {selectedHotspot && (
@@ -104,7 +129,7 @@ export default function App() {
               <>
                 <p className="eyebrow">EXPLORATION</p>
                 <h2>{selectedHotspot.label}</h2>
-                <p>Nothing is stored here. Not every interesting object should reveal knowledge.</p>
+                <p>Nothing is stored here yet. This place can remain empty or receive content later without changing the room layout.</p>
               </>
             )}
             <button className="return-button" onClick={() => setSelectedHotspot(null)}>同じ場所へ戻る</button>

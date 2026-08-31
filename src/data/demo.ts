@@ -18,6 +18,12 @@ export const knowledge: Record<string, KnowledgeCard> = {
     title: 'Energy Transfer',
     body: 'A kitchen gives many concrete examples of energy transfer: heating, cooling, phase change, and mechanical work.',
     teacherCue: 'ASK: Where can students find three different energy transfers in this room?'
+  },
+  'living-overview': {
+    id: 'living-overview',
+    title: 'The Big Picture',
+    body: 'The living room is the overview space of the Memory Palace: a place to connect individual ideas into one larger structure.',
+    teacherCue: 'CONNECT: Return here when students need to see how the current idea fits the whole topic.'
   }
 }
 
@@ -30,6 +36,7 @@ export const world: WorldManifest = {
     'entrance-hall-a': { id: 'entrance-hall-a', title: 'Entrance', lockedLocation: true },
     'study-room': { id: 'study-room', title: 'Study Room', lockedLocation: true },
     'kitchen': { id: 'kitchen', title: 'Kitchen', lockedLocation: true },
+    'living-room': { id: 'living-room', title: 'Living Room', lockedLocation: true },
     'future-hall-b': { id: 'future-hall-b', title: 'Future Hall B', lockedLocation: false }
   },
   scenes: {
@@ -38,7 +45,8 @@ export const world: WorldManifest = {
       title: 'Entrance', visualClass: 'scene-photo', asset: '/world-assets/entrance.webp',
       hotspots: [
         { id: 'door-study', label: 'Study Room', x: 10, y: 12, width: 18, height: 63, kind: 'navigation', targetSceneId: 'study-entry' },
-        { id: 'door-kitchen', label: 'Kitchen', x: 30, y: 15, width: 15, height: 58, kind: 'navigation', targetSceneId: 'kitchen-entry' }
+        { id: 'door-kitchen', label: 'Kitchen', x: 30, y: 15, width: 15, height: 58, kind: 'navigation', targetSceneId: 'kitchen-entry' },
+        { id: 'door-living', label: 'Living Room', x: 62, y: 15, width: 14, height: 58, kind: 'navigation', targetSceneId: 'living-entry' }
       ]
     },
     'study-entry': {
@@ -46,8 +54,6 @@ export const world: WorldManifest = {
       title: 'Study Room', visualClass: 'scene-photo', asset: '/world-assets/study-entry.webp',
       turnLeftSceneId: 'study-exit', turnRightSceneId: 'study-exit',
       hotspots: [
-        // Fine-grained hotspots aligned to individual visible objects.
-        // Shifted slightly left after visual calibration against the fixed 3:2 scene.
         { id: 'study-blue-book', label: 'Blue Book', x: 20.9, y: 54.0, width: 3.2, height: 7.2, kind: 'knowledge', knowledgeId: 'newton-second-law' },
         { id: 'study-desk-book', label: 'Open Book', x: 49.4, y: 48.6, width: 7.0, height: 4.8, kind: 'knowledge', knowledgeId: 'normal-force' },
         { id: 'study-teddy', label: 'Teddy Bear', x: 85.7, y: 51.4, width: 4.6, height: 8.3, kind: 'empty' }
@@ -76,6 +82,23 @@ export const world: WorldManifest = {
       turnLeftSceneId: 'kitchen-entry', turnRightSceneId: 'kitchen-entry',
       hotspots: [
         { id: 'kitchen-door-out', label: 'Entranceへ戻る', x: 32, y: 6, width: 27, height: 68, kind: 'navigation', targetSceneId: 'entrance-a' }
+      ]
+    },
+    'living-entry': {
+      id: 'living-entry', roomId: 'living-room', view: 'entry', role: 'explore',
+      title: 'Living Room', visualClass: 'scene-photo', asset: '/world-assets/living-entry.webp',
+      turnLeftSceneId: 'living-exit', turnRightSceneId: 'living-exit',
+      hotspots: [
+        { id: 'living-coffee-table', label: 'Overview Table', x: 36, y: 55, width: 28, height: 22, kind: 'knowledge', knowledgeId: 'living-overview' },
+        { id: 'living-bookshelf', label: 'Living Room Books', x: 73, y: 12, width: 15, height: 48, kind: 'knowledge', knowledgeId: 'living-overview' }
+      ]
+    },
+    'living-exit': {
+      id: 'living-exit', roomId: 'living-room', view: 'exit', role: 'exit',
+      title: 'Living Room', visualClass: 'scene-photo', asset: '/world-assets/living-exit.webp',
+      turnLeftSceneId: 'living-entry', turnRightSceneId: 'living-entry',
+      hotspots: [
+        { id: 'living-door-out', label: 'Entranceへ戻る', x: 30, y: 7, width: 25, height: 64, kind: 'navigation', targetSceneId: 'entrance-a' }
       ]
     },
     'future-hall-b': {

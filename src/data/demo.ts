@@ -53,7 +53,7 @@ export const world: WorldManifest = {
     },
     'study-exit': {
       id: 'study-exit', roomId: 'study-room', view: 'exit', role: 'exit',
-      title: 'Study Room', visualClass: 'scene-photo',
+      title: 'Study Room', visualClass: 'scene-photo', asset: '/world-assets/study-exit.webp',
       turnLeftSceneId: 'study-entry', turnRightSceneId: 'study-entry',
       hotspots: [
         { id: 'study-door-out', label: 'Entranceへ戻る', x: 29, y: 7, width: 23, height: 66, kind: 'navigation', targetSceneId: 'entrance-a' }
@@ -61,7 +61,7 @@ export const world: WorldManifest = {
     },
     'kitchen-entry': {
       id: 'kitchen-entry', roomId: 'kitchen', view: 'entry', role: 'explore',
-      title: 'Kitchen', visualClass: 'scene-photo',
+      title: 'Kitchen', visualClass: 'scene-photo', asset: '/world-assets/kitchen-entry.webp',
       turnLeftSceneId: 'kitchen-exit', turnRightSceneId: 'kitchen-exit',
       hotspots: [
         { id: 'kitchen-stove', label: 'Stove', x: 65, y: 30, width: 20, height: 38, kind: 'knowledge', knowledgeId: 'kitchen-energy' },
@@ -70,7 +70,7 @@ export const world: WorldManifest = {
     },
     'kitchen-exit': {
       id: 'kitchen-exit', roomId: 'kitchen', view: 'exit', role: 'exit',
-      title: 'Kitchen', visualClass: 'scene-photo',
+      title: 'Kitchen', visualClass: 'scene-photo', asset: '/world-assets/kitchen-exit.webp',
       turnLeftSceneId: 'kitchen-entry', turnRightSceneId: 'kitchen-entry',
       hotspots: [
         { id: 'kitchen-door-out', label: 'Entranceへ戻る', x: 32, y: 6, width: 27, height: 68, kind: 'navigation', targetSceneId: 'entrance-a' }

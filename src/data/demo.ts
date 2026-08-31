@@ -46,9 +46,11 @@ export const world: WorldManifest = {
       title: 'Study Room', visualClass: 'scene-photo', asset: '/world-assets/study-entry.webp',
       turnLeftSceneId: 'study-exit', turnRightSceneId: 'study-exit',
       hotspots: [
-        { id: 'study-blue-book', label: 'Blue Book', x: 7, y: 12, width: 28, height: 52, kind: 'knowledge', knowledgeId: 'newton-second-law' },
-        { id: 'study-desk-book', label: 'Open Book', x: 38, y: 40, width: 26, height: 20, kind: 'knowledge', knowledgeId: 'normal-force' },
-        { id: 'study-teddy', label: 'Teddy Bear', x: 79, y: 41, width: 10, height: 16, kind: 'empty' }
+        // Individual-object hotspots. These boxes intentionally hug the visible object
+        // instead of covering an entire furniture item.
+        { id: 'study-blue-book', label: 'Blue Book', x: 22.1, y: 54.0, width: 3.2, height: 7.2, kind: 'knowledge', knowledgeId: 'newton-second-law' },
+        { id: 'study-desk-book', label: 'Open Book', x: 50.6, y: 48.6, width: 7.0, height: 4.8, kind: 'knowledge', knowledgeId: 'normal-force' },
+        { id: 'study-teddy', label: 'Teddy Bear', x: 86.9, y: 51.4, width: 4.6, height: 8.3, kind: 'empty' }
       ]
     },
     'study-exit': {

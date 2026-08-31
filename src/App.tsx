@@ -3,16 +3,43 @@ import { knowledge, world } from './data/demo'
 import { validateWorld } from './engine/validateWorld'
 import type { Hotspot } from './types/spatial'
 
+type LearningMode = 'explore' | 'guided'
+
+type GuideStep = {
+  sceneId: string
+  hotspotId: string
+  title: string
+}
+
+const guideRoute: GuideStep[] = [
+  { sceneId: 'study-entry', hotspotId: 'study-blue-book', title: 'Newton’s Second Law' },
+  { sceneId: 'study-entry', hotspotId: 'study-desk-book', title: 'Normal Force' },
+  { sceneId: 'kitchen-entry', hotspotId: 'kitchen-stove', title: 'Energy Transfer' }
+]
+
 export default function App() {
   const [currentSceneId, setCurrentSceneId] = useState(world.startSceneId)
-  const [studentGuide, setStudentGuide] = useState(false)
+  const [learningMode, setLearningMode] = useState<LearningMode>('explore')
+  const [learningGuide, setLearningGuide] = useState(false)
   const [teacherGuide, setTeacherGuide] = useState(false)
   const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null)
+  const [guideStepIndex, setGuideStepIndex] = useState(0)
 
   const worldIssues = useMemo(() => validateWorld(world, knowledge), [])
   const scene = world.scenes[currentSceneId]
   const room = world.rooms[scene.roomId]
   const selectedKnowledge = selectedHotspot?.knowledgeId ? knowledge[selectedHotspot.knowledgeId] : null
+
+  const activeGuideStep = learningMode === 'guided' ? guideRoute[guideStepIndex] : undefined
+  const activeGuideHotspot = activeGuideStep?.sceneId === currentSceneId
+    ? scene.hotspots.find((hotspot) => hotspot.id === activeGuideStep.hotspotId)
+    : undefined
+
+  const setMode = (mode: LearningMode) => {
+    setLearningMode(mode)
+    setLearningGuide(mode === 'guided')
+    setSelectedHotspot(null)
+  }
 
   const goToScene = (sceneId?: string) => {
     if (!sceneId || !world.scenes[sceneId]) return
@@ -28,6 +55,13 @@ export default function App() {
     setSelectedHotspot(hotspot)
   }
 
+  const finishKnowledge = () => {
+    setSelectedHotspot(null)
+    if (learningMode === 'guided' && activeGuideHotspot?.id === selectedHotspot?.id) {
+      setGuideStepIndex((index) => Math.min(index + 1, guideRoute.length - 1))
+    }
+  }
+
   const oppositeSceneId = scene.turnRightSceneId ?? scene.turnLeftSceneId
   const oppositeLabel = scene.role === 'exit' ? '部屋を見る' : '出口側を見る'
   const imageSrc = scene.asset ? `${scene.asset}?scene=${encodeURIComponent(scene.id)}` : undefined
@@ -40,8 +74,12 @@ export default function App() {
           <h1>{scene.title}</h1>
         </div>
         <div className="guide-controls">
-          <button className={studentGuide ? 'active' : ''} onClick={() => setStudentGuide((v) => !v)}>生徒カンペ</button>
-          <button className={teacherGuide ? 'active teacher' : 'teacher'} onClick={() => setTeacherGuide((v) => !v)}>先生カンペ</button>
+          <div className="mode-switch" aria-label="学習モード">
+            <button className={learningMode === 'explore' ? 'active' : ''} onClick={() => setMode('explore')}>探索モード</button>
+            <button className={learningMode === 'guided' ? 'active guided' : ''} onClick={() => setMode('guided')}>ガイドモード</button>
+          </div>
+          <button className={learningGuide ? 'active' : ''} onClick={() => setLearningGuide((v) => !v)}>学習ガイド</button>
+          <button className={teacherGuide ? 'active teacher' : 'teacher'} onClick={() => setTeacherGuide((v) => !v)}>教師ガイド</button>
         </div>
       </header>
 
@@ -53,11 +91,12 @@ export default function App() {
         )}
 
         {scene.hotspots.map((hotspot) => {
-          const visible = studentGuide && (Boolean(hotspot.knowledgeId) || hotspot.kind === 'navigation')
+          const isGuideTarget = learningMode === 'guided' && activeGuideHotspot?.id === hotspot.id && !selectedHotspot
+          const visible = learningGuide && (Boolean(hotspot.knowledgeId) || hotspot.kind === 'navigation')
           return (
             <button
               key={hotspot.id}
-              className={`hotspot ${visible ? 'student-visible' : ''} ${hotspot.kind === 'navigation' ? 'navigation-hotspot' : ''}`}
+              className={`hotspot ${visible ? 'student-visible' : ''} ${hotspot.kind === 'navigation' ? 'navigation-hotspot' : ''} ${isGuideTarget ? 'guide-target' : ''}`}
               style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%`, width: `${hotspot.width}%`, height: `${hotspot.height}%` }}
               onClick={() => handleHotspot(hotspot)}
               aria-label={hotspot.label}
@@ -67,11 +106,34 @@ export default function App() {
           )
         })}
 
+        {learningMode === 'guided' && activeGuideHotspot && !selectedHotspot && (
+          <div
+            className="butterfly-guide"
+            style={{
+              left: `${activeGuideHotspot.x + activeGuideHotspot.width / 2}%`,
+              top: `${activeGuideHotspot.y - 3}%`
+            }}
+            aria-hidden="true"
+          >
+            <span className="butterfly">🦋</span>
+            {learningGuide && <span className="guide-caption">ここを見てみよう</span>}
+          </div>
+        )}
+
+        {learningMode === 'guided' && learningGuide && !activeGuideHotspot && !selectedHotspot && activeGuideStep && (
+          <aside className="route-hint">
+            <strong>次の学習場所</strong>
+            <span>{world.scenes[activeGuideStep.sceneId]?.title ?? activeGuideStep.sceneId}</span>
+            <span>蝶が現れる場所まで進もう</span>
+          </aside>
+        )}
+
         {teacherGuide && (
           <aside className="teacher-overlay">
-            <strong>先生カンペ</strong>
+            <strong>教師ガイド</strong>
             <span>{room.title}</span>
             <span>{scene.role === 'exit' ? 'ここは退出専用。知識は置かない。' : '必要な場所をタップして授業を進める。'}</span>
+            {learningMode === 'guided' && activeGuideStep && <span>次: {activeGuideStep.title}</span>}
             {worldIssues.length > 0 && <span>内部データに要確認箇所があります。</span>}
           </aside>
         )}
@@ -84,9 +146,9 @@ export default function App() {
       </section>
 
       {selectedHotspot && (
-        <div className="modal-backdrop" onClick={() => setSelectedHotspot(null)}>
+        <div className="modal-backdrop" onClick={finishKnowledge}>
           <article className="knowledge-card" onClick={(event) => event.stopPropagation()}>
-            <button className="close" onClick={() => setSelectedHotspot(null)}>×</button>
+            <button className="close" onClick={finishKnowledge}>×</button>
             {selectedKnowledge ? (
               <>
                 <h2>{selectedKnowledge.title}</h2>
@@ -99,7 +161,7 @@ export default function App() {
                 <p>ここにはまだ知識は入っていません。</p>
               </>
             )}
-            <button className="return-button" onClick={() => setSelectedHotspot(null)}>同じ場所へ戻る</button>
+            <button className="return-button" onClick={finishKnowledge}>学習を終えて部屋へ戻る</button>
           </article>
         </div>
       )}

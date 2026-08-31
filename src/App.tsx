@@ -14,16 +14,6 @@ export default function App() {
   const room = world.rooms[scene.roomId]
   const selectedKnowledge = selectedHotspot?.knowledgeId ? knowledge[selectedHotspot.knowledgeId] : null
 
-  const knowledgeHotspots = useMemo(
-    () => scene.hotspots.filter((hotspot) => hotspot.knowledgeId),
-    [scene],
-  )
-
-  const navigationHotspots = useMemo(
-    () => scene.hotspots.filter((hotspot) => hotspot.kind === 'navigation' && hotspot.targetSceneId),
-    [scene],
-  )
-
   const goToScene = (sceneId?: string) => {
     if (!sceneId || !world.scenes[sceneId]) return
     setCurrentSceneId(sceneId)
@@ -38,37 +28,24 @@ export default function App() {
     setSelectedHotspot(hotspot)
   }
 
-  const backgroundStyle = scene.asset
-    ? { backgroundImage: `url(${scene.asset})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : undefined
-
   return (
-    <main className="app-shell">
+    <main className="app-shell classroom-mode">
       <header className="topbar">
         <div>
-          <p className="eyebrow">{world.title.toUpperCase()} · {world.version.toUpperCase()} · SCENE GRAPH</p>
+          <p className="eyebrow">MEMORY PALACE PRESENTER</p>
           <h1>{scene.title}</h1>
         </div>
         <div className="guide-controls">
-          <button className={studentGuide ? 'active' : ''} onClick={() => setStudentGuide((v) => !v)}>
-            生徒カンペ
-          </button>
-          <button className={teacherGuide ? 'active teacher' : 'teacher'} onClick={() => setTeacherGuide((v) => !v)}>
-            先生カンペ
-          </button>
+          <button className={studentGuide ? 'active' : ''} onClick={() => setStudentGuide((v) => !v)}>生徒カンペ</button>
+          <button className={teacherGuide ? 'active teacher' : 'teacher'} onClick={() => setTeacherGuide((v) => !v)}>先生カンペ</button>
         </div>
       </header>
 
-      <section className={`scene ${scene.visualClass}`} style={backgroundStyle} aria-label={scene.title}>
-        {!scene.asset && (
-          <div className="room-art" aria-hidden="true">
-            <div className="window" />
-            <div className="shelf"><span /><span /><span /><span /><span /></div>
-            <div className="desk"><div className="desk-book" /></div>
-            <div className="bed" />
-            <div className="rug" />
-            <div className="toy" />
-          </div>
+      <section className="scene scene-photo" aria-label={scene.title}>
+        {scene.asset ? (
+          <img className="scene-image" src={scene.asset} alt="" draggable={false} />
+        ) : (
+          <div className="asset-pending">このSceneの画像を準備中</div>
         )}
 
         {scene.hotspots.map((hotspot) => {
@@ -88,33 +65,20 @@ export default function App() {
 
         {teacherGuide && (
           <aside className="teacher-overlay">
-            <strong>TEACHER GUIDE</strong>
-            <span>Current: {scene.title}</span>
-            <span>Role: {scene.role}</span>
-            <span>Knowledge: {knowledgeHotspots.map((h) => h.label).join(' / ') || 'none'}</span>
-            <span>Routes: {navigationHotspots.map((h) => h.label).join(' / ') || 'none'}</span>
-            <span>{room.lockedLocation ? 'WORLD LOCK: this room location is fixed.' : 'EXPANSION AREA: new rooms may be attached here.'}</span>
-            <span>GRAPH CHECK: {worldIssues.length === 0 ? 'PASS' : `${worldIssues.length} issue(s)`}</span>
+            <strong>先生カンペ</strong>
+            <span>{room.title}</span>
+            <span>{scene.role === 'exit' ? 'ここは退出専用。知識は置かない。' : '必要な場所をタップして授業を進める。'}</span>
+            {worldIssues.length > 0 && <span>内部データに要確認箇所があります。</span>}
           </aside>
         )}
 
         {(scene.turnLeftSceneId || scene.turnRightSceneId) && (
-          <nav className="turn-controls" aria-label="View direction controls">
-            <button disabled={!scene.turnLeftSceneId} onClick={() => goToScene(scene.turnLeftSceneId)}>← 左を見る</button>
-            <div className="direction-indicator">{scene.view.toUpperCase()}</div>
-            <button disabled={!scene.turnRightSceneId} onClick={() => goToScene(scene.turnRightSceneId)}>右を見る →</button>
+          <nav className="turn-controls" aria-label="視点を変える">
+            <button disabled={!scene.turnLeftSceneId} onClick={() => goToScene(scene.turnLeftSceneId)}>← 反対を見る</button>
+            <button disabled={!scene.turnRightSceneId} onClick={() => goToScene(scene.turnRightSceneId)}>反対を見る →</button>
           </nav>
         )}
       </section>
-
-      <footer className="statusbar">
-        <span>WORLD: {world.title} {world.version}</span>
-        <span>ROOM: {room.title}</span>
-        <span>SCENE: {scene.id}</span>
-        <span>VIEW: {scene.view.toUpperCase()}</span>
-        <span>{room.lockedLocation ? '🔒 LOCATION LOCKED' : '＋ EXPANDABLE'}</span>
-        <span>GRAPH: {worldIssues.length === 0 ? 'PASS' : 'FAIL'}</span>
-      </footer>
 
       {selectedHotspot && (
         <div className="modal-backdrop" onClick={() => setSelectedHotspot(null)}>
@@ -122,18 +86,14 @@ export default function App() {
             <button className="close" onClick={() => setSelectedHotspot(null)}>×</button>
             {selectedKnowledge ? (
               <>
-                <p className="eyebrow">{selectedHotspot.kind.toUpperCase()}</p>
                 <h2>{selectedKnowledge.title}</h2>
                 <p>{selectedKnowledge.body}</p>
-                {teacherGuide && selectedKnowledge.teacherCue && (
-                  <div className="teacher-cue">{selectedKnowledge.teacherCue}</div>
-                )}
+                {teacherGuide && selectedKnowledge.teacherCue && <div className="teacher-cue">{selectedKnowledge.teacherCue}</div>}
               </>
             ) : (
               <>
-                <p className="eyebrow">EXPLORATION</p>
                 <h2>{selectedHotspot.label}</h2>
-                <p>Nothing is stored here yet. This place can remain empty or receive content later without changing the room layout.</p>
+                <p>ここにはまだ知識は入っていません。</p>
               </>
             )}
             <button className="return-button" onClick={() => setSelectedHotspot(null)}>同じ場所へ戻る</button>

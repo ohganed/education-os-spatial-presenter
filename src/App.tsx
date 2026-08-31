@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { knowledge, world } from './data/demo'
+import { validateWorld } from './engine/validateWorld'
 import type { Hotspot } from './types/spatial'
 
 export default function App() {
@@ -8,6 +9,7 @@ export default function App() {
   const [teacherGuide, setTeacherGuide] = useState(false)
   const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null)
 
+  const worldIssues = useMemo(() => validateWorld(world, knowledge), [])
   const scene = world.scenes[currentSceneId]
   const room = world.rooms[scene.roomId]
   const selectedKnowledge = selectedHotspot?.knowledgeId ? knowledge[selectedHotspot.knowledgeId] : null
@@ -92,6 +94,7 @@ export default function App() {
             <span>Knowledge: {knowledgeHotspots.map((h) => h.label).join(' / ') || 'none'}</span>
             <span>Routes: {navigationHotspots.map((h) => h.label).join(' / ') || 'none'}</span>
             <span>{room.lockedLocation ? 'WORLD LOCK: this room location is fixed.' : 'EXPANSION AREA: new rooms may be attached here.'}</span>
+            <span>GRAPH CHECK: {worldIssues.length === 0 ? 'PASS' : `${worldIssues.length} issue(s)`}</span>
           </aside>
         )}
 
@@ -110,6 +113,7 @@ export default function App() {
         <span>SCENE: {scene.id}</span>
         <span>VIEW: {scene.view.toUpperCase()}</span>
         <span>{room.lockedLocation ? '🔒 LOCATION LOCKED' : '＋ EXPANDABLE'}</span>
+        <span>GRAPH: {worldIssues.length === 0 ? 'PASS' : 'FAIL'}</span>
       </footer>
 
       {selectedHotspot && (

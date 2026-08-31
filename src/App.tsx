@@ -28,6 +28,10 @@ export default function App() {
     setSelectedHotspot(hotspot)
   }
 
+  const oppositeSceneId = scene.turnRightSceneId ?? scene.turnLeftSceneId
+  const oppositeLabel = scene.role === 'exit' ? '部屋を見る' : '出口側を見る'
+  const imageSrc = scene.asset ? `${scene.asset}?scene=${encodeURIComponent(scene.id)}` : undefined
+
   return (
     <main className="app-shell classroom-mode">
       <header className="topbar">
@@ -42,8 +46,8 @@ export default function App() {
       </header>
 
       <section className="scene scene-photo" aria-label={scene.title}>
-        {scene.asset ? (
-          <img className="scene-image" src={scene.asset} alt="" draggable={false} />
+        {imageSrc ? (
+          <img key={scene.id} className="scene-image" src={imageSrc} alt="" draggable={false} />
         ) : (
           <div className="asset-pending">このSceneの画像を準備中</div>
         )}
@@ -72,10 +76,9 @@ export default function App() {
           </aside>
         )}
 
-        {(scene.turnLeftSceneId || scene.turnRightSceneId) && (
+        {oppositeSceneId && (
           <nav className="turn-controls" aria-label="視点を変える">
-            <button disabled={!scene.turnLeftSceneId} onClick={() => goToScene(scene.turnLeftSceneId)}>← 反対を見る</button>
-            <button disabled={!scene.turnRightSceneId} onClick={() => goToScene(scene.turnRightSceneId)}>反対を見る →</button>
+            <button onClick={() => goToScene(oppositeSceneId)}>{oppositeLabel}</button>
           </nav>
         )}
       </section>

@@ -7,21 +7,29 @@ button:disabled { opacity: .42; cursor: default; }
 .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 16px; background:rgba(15,23,42,.96); }
 .topbar h1 { margin:2px 0 0; font-size:clamp(1.05rem,2vw,1.45rem); }
 .eyebrow { margin:0; font-size:.68rem; letter-spacing:.14em; opacity:.68; }
-.guide-controls { display:flex; gap:8px; }
+.guide-controls { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+.mode-switch { display:flex; gap:6px; padding:4px; border-radius:14px; background:rgba(255,255,255,.06); }
 .guide-controls button, .turn-controls button, .return-button { border:1px solid rgba(255,255,255,.22); background:rgba(15,23,42,.72); color:#fff; border-radius:12px; padding:10px 14px; cursor:pointer; backdrop-filter:blur(8px); }
 .guide-controls button.active { background:rgba(37,99,235,.82); }
+.guide-controls button.active.guided { background:rgba(5,150,105,.88); }
 .guide-controls button.active.teacher { background:rgba(147,51,234,.82); }
 .scene { position:relative; width:min(100vw, calc((100vh - 72px) * 1.5)); aspect-ratio:3 / 2; align-self:start; justify-self:center; overflow:hidden; isolation:isolate; background:#0b0f17; }
 .scene-image { position:absolute; inset:0; width:100%; height:100%; object-fit:fill; user-select:none; }
 .asset-pending { position:absolute; inset:0; display:grid; place-items:center; color:rgba(255,255,255,.72); background:linear-gradient(135deg,#241b16,#5b4638); font-size:1.05rem; }
-.hotspot { position:absolute; z-index:3; border:2px solid transparent; background:transparent; border-radius:12px; cursor:pointer; }
+.hotspot { position:absolute; z-index:3; border:2px solid transparent; background:transparent; border-radius:8px; cursor:pointer; transition:border-color .2s ease, background .2s ease, box-shadow .2s ease; }
 .hotspot:hover { border-color:rgba(255,255,255,.6); background:rgba(255,255,255,.06); }
 .hotspot.navigation-hotspot:hover { border-color:rgba(56,189,248,.95); background:rgba(56,189,248,.10); }
-.hotspot.student-visible { border-color:#facc15; background:rgba(250,204,21,.12); }
-.hotspot.student-visible.navigation-hotspot { border-color:#38bdf8; background:rgba(56,189,248,.14); }
+.hotspot.student-visible { border-color:rgba(250,204,21,.9); background:rgba(250,204,21,.10); }
+.hotspot.student-visible.navigation-hotspot { border-color:rgba(56,189,248,.9); background:rgba(56,189,248,.12); }
+.hotspot.guide-target { border-color:rgba(255,255,255,.92); box-shadow:0 0 0 4px rgba(255,255,255,.12), 0 0 28px rgba(250,204,21,.45); background:rgba(255,255,255,.06); }
 .hotspot span { position:absolute; left:50%; top:0; transform:translate(-50%,-115%); white-space:nowrap; background:rgba(15,23,42,.94); color:#fff; border:1px solid #facc15; padding:5px 8px; border-radius:8px; font-size:.75rem; }
 .navigation-hotspot span { border-color:#38bdf8; }
-.teacher-overlay { position:absolute; z-index:5; left:18px; bottom:82px; max-width:min(420px,86vw); display:grid; gap:5px; padding:12px 14px; border-radius:12px; background:rgba(76,29,149,.86); border:1px solid rgba(255,255,255,.22); backdrop-filter:blur(9px); font-size:.84rem; }
+.butterfly-guide { position:absolute; z-index:8; transform:translate(-50%,-50%); pointer-events:none; display:flex; flex-direction:column; align-items:center; gap:4px; animation:guide-arrive 1.2s ease-out both; }
+.butterfly { display:block; font-size:clamp(24px,3vw,40px); filter:drop-shadow(0 5px 8px rgba(0,0,0,.34)); animation:butterfly-hover 1.8s ease-in-out infinite; }
+.guide-caption { padding:5px 9px; border-radius:999px; background:rgba(15,23,42,.76); border:1px solid rgba(255,255,255,.3); color:#fff; font-size:.72rem; white-space:nowrap; backdrop-filter:blur(6px); }
+.route-hint { position:absolute; z-index:7; left:18px; bottom:18px; display:grid; gap:3px; max-width:min(320px,80vw); padding:10px 12px; border-radius:14px; background:rgba(15,23,42,.64); border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(8px); font-size:.8rem; }
+.route-hint span:last-child { opacity:.74; }
+.teacher-overlay { position:absolute; z-index:9; left:18px; bottom:82px; max-width:min(420px,86vw); display:grid; gap:5px; padding:12px 14px; border-radius:12px; background:rgba(76,29,149,.86); border:1px solid rgba(255,255,255,.22); backdrop-filter:blur(9px); font-size:.84rem; }
 .turn-controls { position:absolute; z-index:6; left:50%; bottom:16px; transform:translateX(-50%); display:flex; gap:10px; padding:8px; border-radius:16px; background:rgba(15,23,42,.58); backdrop-filter:blur(8px); }
 .modal-backdrop { position:fixed; z-index:20; inset:0; display:grid; place-items:center; padding:18px; background:rgba(4,8,16,.72); backdrop-filter:blur(6px); }
 .knowledge-card { position:relative; width:min(680px,94vw); background:#f8fafc; color:#172033; border-radius:22px; padding:32px; box-shadow:0 28px 80px rgba(0,0,0,.36); }
@@ -30,10 +38,23 @@ button:disabled { opacity: .42; cursor: default; }
 .close { position:absolute; right:14px; top:12px; width:40px; height:40px; border:0; border-radius:50%; font-size:1.6rem; background:#e5e7eb; cursor:pointer; }
 .teacher-cue { margin:18px 0; padding:14px; border-left:4px solid #7c3aed; background:#f3e8ff; border-radius:8px; font-weight:700; }
 .return-button { margin-top:14px; background:#111827; }
+@keyframes butterfly-hover {
+  0%,100% { transform:translate3d(-4px,0,0) rotate(-4deg); }
+  50% { transform:translate3d(5px,-8px,0) rotate(5deg); }
+}
+@keyframes guide-arrive {
+  from { opacity:0; transform:translate(-80%,-80%) scale(.72); }
+  to { opacity:1; transform:translate(-50%,-50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .butterfly, .butterfly-guide { animation:none; }
+}
 @media (max-width:720px) {
   .topbar { align-items:flex-start; flex-direction:column; }
-  .guide-controls { width:100%; }
-  .guide-controls button { flex:1; }
+  .guide-controls { width:100%; justify-content:flex-start; }
+  .mode-switch { width:100%; }
+  .mode-switch button { flex:1; }
+  .guide-controls > button { flex:1; }
   .scene { width:100vw; aspect-ratio:3 / 2; }
   .turn-controls { width:calc(100% - 24px); justify-content:center; }
   .turn-controls button { padding:11px 10px; }

@@ -3,57 +3,37 @@
 body { margin: 0; min-width: 320px; min-height: 100vh; background: #111827; }
 button { font: inherit; }
 button:disabled { opacity: .42; cursor: default; }
-.app-shell { min-height: 100vh; display: grid; grid-template-rows: auto 1fr auto; }
-.topbar, .statusbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; background: rgba(17,24,39,.96); }
-.topbar h1 { margin: 2px 0 0; font-size: clamp(1.1rem, 2vw, 1.55rem); }
-.eyebrow { margin: 0; font-size: .7rem; letter-spacing: .14em; opacity: .68; }
-.guide-controls { display: flex; gap: 8px; }
-.guide-controls button, .turn-controls button, .return-button { border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.09); color: #fff; border-radius: 12px; padding: 10px 14px; cursor: pointer; }
-.guide-controls button.active { background: rgba(59,130,246,.8); }
-.guide-controls button.active.teacher { background: rgba(234,88,12,.86); }
-.scene { position: relative; overflow: hidden; min-height: 68vh; isolation: isolate; background: linear-gradient(#bfd9ea 0 42%, #d8c3a2 42% 100%); transition: background .35s ease; }
-.scene-entrance { background: linear-gradient(135deg,#c8b08d 0 28%,#8b6849 28% 31%,#d6c3a8 31% 69%,#7a563b 69% 72%,#b59b79 72%); }
-.scene-study { background: linear-gradient(#d9c9b2 0 46%, #8a6547 46% 100%); }
-.scene-study-exit { background: linear-gradient(115deg,#7c593d 0 18%,#d2bfa5 18% 63%,#6a472f 63% 68%,#9b7a5a 68%); }
-.scene-kitchen { background: linear-gradient(#d9c6a7 0 42%,#a77b51 42% 100%); }
-.scene-kitchen-exit { background: linear-gradient(110deg,#d6c09f 0 46%,#6b4b34 46% 52%,#d1b795 52% 100%); }
-.scene-future { background: linear-gradient(135deg,#334155,#64748b 48%,#1e293b); }
-.room-art { position: absolute; inset: 0; transition: transform .35s ease, filter .35s ease; opacity:.92; }
-.scene-study-exit .room-art, .scene-kitchen-exit .room-art, .scene-entrance .room-art, .scene-future .room-art { opacity:.52; filter:saturate(.72); }
-.window { position: absolute; left: 61%; top: 10%; width: 24%; height: 28%; background: linear-gradient(135deg,#dff6ff,#8cc8e8); border: 12px solid #ece7dc; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
-.shelf { position: absolute; left: 13%; top: 22%; width: 25%; height: 46%; background: #6f4d34; border: 12px solid #4e3424; display: flex; align-items: end; gap: 5%; padding: 12px 10px; }
-.shelf::before, .shelf::after { content:""; position:absolute; left:0; right:0; height:8px; background:#4e3424; }
-.shelf::before { top: 34%; } .shelf::after { top: 66%; }
-.shelf span { width: 11%; height: 36%; background: #305f84; border-radius: 2px 2px 0 0; box-shadow: 22px -38px 0 #9b4b3f, 45px -6px 0 #cfb553; }
-.desk { position:absolute; left:52%; top:56%; width:30%; height:22%; background:#7f5d3f; border-radius:5px 5px 0 0; box-shadow: 0 18px 0 -10px #60432d; }
-.desk-book { position:absolute; left:22%; top:-8%; width:34%; height:16%; background:#47677d; transform:rotate(-5deg); border-radius:3px; }
-.bed { position:absolute; right:-2%; bottom:4%; width:38%; height:23%; background:#e5dfd2; border-radius:26px 0 0 8px; box-shadow: inset 0 0 0 7px rgba(105,83,64,.18); }
-.rug { position:absolute; left:27%; bottom:2%; width:31%; height:17%; background:rgba(142,91,66,.58); border-radius:50%; transform:rotate(-4deg); }
-.toy { position:absolute; left:68%; top:42%; width:8%; aspect-ratio:1; background:#b56e42; border-radius:45% 45% 40% 40%; box-shadow:-18px -12px 0 -9px #b56e42,18px -12px 0 -9px #b56e42; }
+.app-shell { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; background:#0b0f17; }
+.topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:12px 16px; background:rgba(15,23,42,.96); }
+.topbar h1 { margin:2px 0 0; font-size:clamp(1.05rem,2vw,1.45rem); }
+.eyebrow { margin:0; font-size:.68rem; letter-spacing:.14em; opacity:.68; }
+.guide-controls { display:flex; gap:8px; }
+.guide-controls button, .turn-controls button, .return-button { border:1px solid rgba(255,255,255,.22); background:rgba(15,23,42,.72); color:#fff; border-radius:12px; padding:10px 14px; cursor:pointer; backdrop-filter:blur(8px); }
+.guide-controls button.active { background:rgba(37,99,235,.82); }
+.guide-controls button.active.teacher { background:rgba(147,51,234,.82); }
+.scene { position:relative; min-height:0; overflow:hidden; isolation:isolate; background:#0b0f17; }
+.scene-image { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; user-select:none; }
+.asset-pending { position:absolute; inset:0; display:grid; place-items:center; color:rgba(255,255,255,.72); background:linear-gradient(135deg,#241b16,#5b4638); font-size:1.05rem; }
 .hotspot { position:absolute; z-index:3; border:2px solid transparent; background:transparent; border-radius:12px; cursor:pointer; }
-.hotspot:hover { border-color:rgba(255,255,255,.55); background:rgba(255,255,255,.08); }
-.hotspot.navigation-hotspot:hover { border-color:rgba(56,189,248,.9); background:rgba(56,189,248,.12); }
+.hotspot:hover { border-color:rgba(255,255,255,.6); background:rgba(255,255,255,.06); }
+.hotspot.navigation-hotspot:hover { border-color:rgba(56,189,248,.95); background:rgba(56,189,248,.10); }
 .hotspot.student-visible { border-color:#facc15; background:rgba(250,204,21,.12); }
 .hotspot.student-visible.navigation-hotspot { border-color:#38bdf8; background:rgba(56,189,248,.14); }
-.hotspot span { position:absolute; left:50%; top:0; transform:translate(-50%,-115%); white-space:nowrap; background:#111827; color:#fff; border:1px solid #facc15; padding:5px 8px; border-radius:8px; font-size:.75rem; }
+.hotspot span { position:absolute; left:50%; top:0; transform:translate(-50%,-115%); white-space:nowrap; background:rgba(15,23,42,.94); color:#fff; border:1px solid #facc15; padding:5px 8px; border-radius:8px; font-size:.75rem; }
 .navigation-hotspot span { border-color:#38bdf8; }
-.teacher-overlay { position:absolute; z-index:5; left:18px; bottom:88px; max-width:min(470px,86vw); display:grid; gap:5px; padding:12px 14px; border-radius:12px; background:rgba(92,39,12,.88); border:1px solid rgba(255,255,255,.22); backdrop-filter:blur(8px); font-size:.84rem; }
-.turn-controls { position:absolute; z-index:6; left:50%; bottom:18px; transform:translateX(-50%); display:flex; align-items:center; gap:10px; padding:8px; border-radius:16px; background:rgba(17,24,39,.68); backdrop-filter:blur(8px); }
-.direction-indicator { min-width:76px; text-align:center; font-size:.75rem; letter-spacing:.12em; opacity:.8; }
-.statusbar { font-size:.74rem; opacity:.82; justify-content:flex-start; flex-wrap:wrap; }
-.statusbar span { padding-right:16px; }
+.teacher-overlay { position:absolute; z-index:5; left:18px; bottom:82px; max-width:min(420px,86vw); display:grid; gap:5px; padding:12px 14px; border-radius:12px; background:rgba(76,29,149,.86); border:1px solid rgba(255,255,255,.22); backdrop-filter:blur(9px); font-size:.84rem; }
+.turn-controls { position:absolute; z-index:6; left:50%; bottom:16px; transform:translateX(-50%); display:flex; gap:10px; padding:8px; border-radius:16px; background:rgba(15,23,42,.58); backdrop-filter:blur(8px); }
 .modal-backdrop { position:fixed; z-index:20; inset:0; display:grid; place-items:center; padding:18px; background:rgba(4,8,16,.72); backdrop-filter:blur(6px); }
 .knowledge-card { position:relative; width:min(680px,94vw); background:#f8fafc; color:#172033; border-radius:22px; padding:32px; box-shadow:0 28px 80px rgba(0,0,0,.36); }
 .knowledge-card h2 { margin:6px 0 14px; font-size:clamp(1.7rem,4vw,2.6rem); }
 .knowledge-card p { line-height:1.65; }
 .close { position:absolute; right:14px; top:12px; width:40px; height:40px; border:0; border-radius:50%; font-size:1.6rem; background:#e5e7eb; cursor:pointer; }
-.teacher-cue { margin:18px 0; padding:14px; border-left:4px solid #ea580c; background:#fff1e8; border-radius:8px; font-weight:700; }
+.teacher-cue { margin:18px 0; padding:14px; border-left:4px solid #7c3aed; background:#f3e8ff; border-radius:8px; font-weight:700; }
 .return-button { margin-top:14px; background:#111827; }
-@media (max-width: 720px) {
+@media (max-width:720px) {
   .topbar { align-items:flex-start; flex-direction:column; }
   .guide-controls { width:100%; }
   .guide-controls button { flex:1; }
-  .scene { min-height:72vh; }
   .turn-controls { width:calc(100% - 24px); justify-content:space-between; }
   .turn-controls button { padding:11px 10px; }
 }

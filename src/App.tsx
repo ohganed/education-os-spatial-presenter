@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { knowledge, world } from './data/demo'
+import { buildGuidanceRoute } from './engine/buildGuidanceRoute'
 import { validateWorld } from './engine/validateWorld'
 import type { Hotspot } from './types/spatial'
 
@@ -24,6 +25,7 @@ export default function App() {
   const [teacherGuide, setTeacherGuide] = useState(false)
   const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null)
   const [guideStepIndex, setGuideStepIndex] = useState(0)
+  const [routeCursor, setRouteCursor] = useState(0)
 
   const worldIssues = useMemo(() => validateWorld(world, knowledge), [])
   const scene = world.scenes[currentSceneId]
@@ -31,14 +33,26 @@ export default function App() {
   const selectedKnowledge = selectedHotspot?.knowledgeId ? knowledge[selectedHotspot.knowledgeId] : null
 
   const activeGuideStep = learningMode === 'guided' ? guideRoute[guideStepIndex] : undefined
-  const activeGuideHotspot = activeGuideStep?.sceneId === currentSceneId
-    ? scene.hotspots.find((hotspot) => hotspot.id === activeGuideStep.hotspotId)
+  const spatialRoute = useMemo(() => {
+    if (!activeGuideStep) return []
+    return buildGuidanceRoute(
+      world,
+      world.startSceneId,
+      activeGuideStep.sceneId,
+      activeGuideStep.hotspotId
+    )
+  }, [activeGuideStep])
+  const activeRouteStep = learningMode === 'guided' ? spatialRoute[routeCursor] : undefined
+  const activeGuideHotspot = activeRouteStep?.sceneId === currentSceneId
+    ? scene.hotspots.find((hotspot) => hotspot.id === activeRouteStep.hotspotId)
     : undefined
 
   const setMode = (mode: LearningMode) => {
     setLearningMode(mode)
     setLearningGuide(mode === 'guided')
     setSelectedHotspot(null)
+    setCurrentSceneId(world.startSceneId)
+    setRouteCursor(0)
   }
 
   const goToScene = (sceneId?: string) => {
@@ -50,6 +64,9 @@ export default function App() {
   const handleHotspot = (hotspot: Hotspot) => {
     if (hotspot.kind === 'navigation' && hotspot.targetSceneId) {
       goToScene(hotspot.targetSceneId)
+      if (learningMode === 'guided' && activeRouteStep?.hotspotId === hotspot.id) {
+        setRouteCursor((cursor) => Math.min(cursor + 1, spatialRoute.length - 1))
+      }
       return
     }
     setSelectedHotspot(hotspot)
@@ -59,8 +76,34 @@ export default function App() {
     setSelectedHotspot(null)
     if (learningMode === 'guided' && activeGuideHotspot?.id === selectedHotspot?.id) {
       setGuideStepIndex((index) => Math.min(index + 1, guideRoute.length - 1))
+      setCurrentSceneId(world.startSceneId)
+      setRouteCursor(0)
     }
   }
+
+  useEffect(() => {
+    setRouteCursor(0)
+    if (learningMode === 'guided') setCurrentSceneId(world.startSceneId)
+  }, [guideStepIndex, learningMode])
+
+  useEffect(() => {
+    if (learningMode !== 'guided' || selectedHotspot) return
+    if (!activeRouteStep || activeRouteStep.kind !== 'navigation') return
+    if (!activeGuideHotspot?.targetSceneId) return
+
+    const timer = window.setTimeout(() => {
+      goToScene(activeGuideHotspot.targetSceneId)
+      setRouteCursor((cursor) => Math.min(cursor + 1, spatialRoute.length - 1))
+    }, 1600)
+
+    return () => window.clearTimeout(timer)
+  }, [
+    learningMode,
+    selectedHotspot,
+    activeRouteStep,
+    activeGuideHotspot,
+    spatialRoute.length
+  ])
 
   const oppositeSceneId = scene.turnRightSceneId ?? scene.turnLeftSceneId
   const oppositeLabel = scene.role === 'exit' ? '部屋を見る' : '出口側を見る'
@@ -143,7 +186,11 @@ export default function App() {
             aria-hidden="true"
           >
             <span className="butterfly">🦋</span>
-            {learningGuide && <span className="guide-caption">ここを見てみよう</span>}
+            {learningGuide && (
+              <span className="guide-caption">
+                {activeRouteStep?.kind === 'navigation' ? 'この部屋へ進みます' : 'ここにプレゼンがあります'}
+              </span>
+            )}
           </div>
         )}
 
@@ -151,7 +198,7 @@ export default function App() {
           <aside className="route-hint">
             <strong>次の学習場所</strong>
             <span>{world.scenes[activeGuideStep.sceneId]?.title ?? activeGuideStep.sceneId}</span>
-            <span>蝶が現れる場所まで進もう</span>
+            <span>案内ルートを確認しています</span>
           </aside>
         )}
 

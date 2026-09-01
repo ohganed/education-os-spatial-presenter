@@ -66,6 +66,9 @@ export default function App() {
   const oppositeLabel = scene.role === 'exit' ? '部屋を見る' : '出口側を見る'
   const imageSrc = scene.asset ? `${scene.asset}?scene=${encodeURIComponent(scene.id)}` : undefined
 
+  const polygonHotspots = scene.hotspots.filter((hotspot) => hotspot.points && hotspot.points.length >= 3)
+  const rectangleHotspots = scene.hotspots.filter((hotspot) => !hotspot.points || hotspot.points.length < 3)
+
   return (
     <main className="app-shell classroom-mode">
       <header className="topbar">
@@ -90,7 +93,7 @@ export default function App() {
           <div className="asset-pending">このSceneの画像を準備中</div>
         )}
 
-        {scene.hotspots.map((hotspot) => {
+        {rectangleHotspots.map((hotspot) => {
           const isGuideTarget = learningMode === 'guided' && activeGuideHotspot?.id === hotspot.id && !selectedHotspot
           const visible = learningGuide && (Boolean(hotspot.knowledgeId) || hotspot.kind === 'navigation')
           return (
@@ -105,6 +108,30 @@ export default function App() {
             </button>
           )
         })}
+
+        {polygonHotspots.length > 0 && (
+          <svg className="object-hotspot-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="物体選択レイヤー">
+            {polygonHotspots.map((hotspot) => {
+              const isGuideTarget = learningMode === 'guided' && activeGuideHotspot?.id === hotspot.id && !selectedHotspot
+              const visible = learningGuide && (Boolean(hotspot.knowledgeId) || hotspot.kind === 'navigation')
+              const points = hotspot.points!.map(([x, y]) => `${x},${y}`).join(' ')
+              return (
+                <polygon
+                  key={hotspot.id}
+                  points={points}
+                  className={`object-hotspot ${visible ? 'object-visible' : ''} ${isGuideTarget ? 'object-guide-target' : ''} ${hotspot.kind === 'navigation' ? 'object-navigation' : ''}`}
+                  onClick={() => handleHotspot(hotspot)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={hotspot.label}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') handleHotspot(hotspot)
+                  }}
+                />
+              )
+            })}
+          </svg>
+        )}
 
         {learningMode === 'guided' && activeGuideHotspot && !selectedHotspot && (
           <div

@@ -1,1 +1,0 @@
-Temporary CI note: the guidance verification workflow should avoid npm cache/npm ci until a lockfile is committed.
